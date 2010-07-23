@@ -1,0 +1,6 @@
+options :system => false
+
+env :development do
+  gem 'watchr'
+  gem 'rspec', '= 2.0.0.beta.18'
+end
