@@ -57,7 +57,7 @@ module Net
     def connected
       TCPSocket.open(@host, @port) do |s|
         yield s
-        s.gets
+        s.gets.chomp
       end
     end
   end
