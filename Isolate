@@ -1,5 +1,3 @@
-options :system => false
-
 env :development do
   gem 'rake'
   gem 'watchr', '~> 0.6.0'
