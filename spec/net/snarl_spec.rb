@@ -14,4 +14,8 @@ describe Net::Snarl do
       snarl.port.should == 1234
     end
   end
+
+  context 'when connected' do
+    it 'should have some decent specs'
+  end
 end
