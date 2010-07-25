@@ -14,32 +14,43 @@ module Net
       @port = (port || 9887).to_i
     end
 
-    def notify(*args)
-      params = args.last || {}
+    def notify(params = {})
       add_defaults(params)
 
-      response = connected { |c| c.write command('notification', params) }
+      connected { |c| c.write command('notification', params) }
     end
 
     def register(app)
-      response = connected { |c| c.write command('register', :app => app) }
+      connected { |c| c.write command('register', :app => app) }
     end
 
     def unregister(app)
-      response = connected { |c| c.write command('unregister', :app => app) }
+      connected { |c| c.write command('unregister', :app => app) }
     end
 
-    def add_class(app, klass, *args)
-      params = args.last || {}
+    def add_class(app, klass, params = {})
       params[:app] = app
       params[:class] = klass
 
-      response = connected { |c| c.write command('add_class', params) }
+      connected { |c| c.write command('add_class', params) }
+    end
+
+    def hello
+      connected { |c| c.write command('hello') }
+    end
+
+    def version
+      connected { |c| c.write command('version') }
+    end
+
+    def inspect
+      version = hello.split('/').last
+      "#<#{self.class} host=#{@host}, port=#{@port}, version=#{version.inspect}>"
     end
 
     private
 
-    def command(action, params)
+    def command(action, params = {})
       cmd = [HEADER, PROTOCOL_VERSION, "action=#{action}"]
 
       params.each do |k, v|
