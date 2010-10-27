@@ -1,3 +1,6 @@
+ $:.unshift File.expand_path(File.join(File.dirname(__FILE__), 'lib'))
+require 'net/snarl'
+
 # Run me with:
 #   $ watchr specs.watchr
 
@@ -55,12 +58,15 @@ end
 def run(command)
   system clearscreen
   puts command
-  system command
+  output = `#{command}`
   no_interruption
+  puts output
+  output
 end
 
 def rspec(*paths)
-  run "rspec #{gem_opt} -I#{include_dirs} #{paths.flatten.join(' ')}"
+  output = run("rspec #{gem_opt} -I#{include_dirs} #{paths.flatten.join(' ')}")
+  notify output
 end
 
 def include_dirs
@@ -73,4 +79,39 @@ end
 
 def clearscreen
   RbConfig::CONFIG['host_os'] =~ /mingw|mswin/ ? 'cls' : 'clear'
+end
+
+def notify(output)
+  title = File.basename(File.dirname(__FILE__))
+  output =~ /(\d+)\sexample.?,\s(\d+)\sfailure.?(,\s(\d+)\spending)?/
+  examples, failures, pending = $1.to_i, $2.to_i, $4.to_i
+  defaults = {
+    :app => 'autotest',
+    :timeout => 5
+  }
+  if failures > 0
+    snarl.notify(defaults.merge(
+      :title => title,
+      :text => "#{examples} examples, #{failures} failures",
+      :icon => File.expand_path('~/.snarl/fail.png')
+    ))
+  elsif pending > 0
+    snarl.notify(defaults.merge(
+      :title => title,
+      :text => "#{pending} pending",
+      :icon => File.expand_path('~/.snarl/pending.png')
+    ))
+  else
+    snarl.notify(defaults.merge(
+      :title => title,
+      :text => "No failures or pending",
+      :icon => File.expand_path('~/.snarl/pass.png')
+    ))
+  end
+end
+
+def snarl
+  @snarl ||= Net::Snarl.new
+  @snarl.register('autotest')
+  @snarl
 end
